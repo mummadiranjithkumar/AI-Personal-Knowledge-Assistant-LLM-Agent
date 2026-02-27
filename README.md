@@ -1,81 +1,45 @@
-🧠 AI Personal Knowledge Assistant (Local LLM Agent with RAG)
+#  🧠  AI Personal Knowledge Assistant (Local LLM Agent with RAG)
 
-A production-ready, local-first AI personal knowledge assistant that lets you upload documents and chat with them using a fully offline LLM.
+An AI-powered personal knowledge system that allows you to upload documents and chat with them using natural language — completely offline using a local LLM.
 
-Built with a custom RAG pipeline, FAISS vector search, and an LLM-driven tool-using agent — without LangChain.
+This project implements a custom Retrieval-Augmented Generation (RAG) pipeline + LLM agent with FAISS and Ollama to deliver accurate, context-aware answers from your own data.
 
 🚀 Features
 
-📄 Upload and chat with your personal documents
-🔍 Semantic search over your knowledge base (FAISS)
-🧠 LLM agent that decides when to retrieve vs answer directly
-💬 Conversational memory (chat history aware)
-⚡ Embedding cache to avoid recomputation
-♻️ Document deduplication (no re-indexing same file)
-🛠 Debug panel showing:
+Upload and process personal documents
+Semantic search using FAISS vector store
+LLM agent that decides when to retrieve vs answer directly
+Conversation memory (chat history aware)
+Embedding cache to avoid recomputation
+Document deduplication (no duplicate indexing)
+Debug view for:
 
 tools used
 
 retrieved chunks
 
-agent reasoning steps
-💻 100% local execution (no paid APIs)
+agent steps
+
+Fully local execution (no API key required)
 
 🧠 Tech Stack
 
 Python
-
-Streamlit – UI
-
-Ollama (Llama 3 / Mistral) – Local LLM
-
-FAISS – Vector database
-
-sentence-transformers – Embeddings
-
-PyPDF – PDF parsing
-
+Streamlit
+Ollama (Llama 3 / Mistral)
+FAISS
+Sentence Transformers
+PyPDF
 NumPy
+Requests
 
-🏗 Architecture
-
-This project implements a manual RAG + LLM agent loop:
-
-Documents are ingested and chunked
-
-Chunks → embeddings
-
-Stored in FAISS
-
-User query →
-
-Agent decides:
-
-🔹 Answer directly
-
-🔹 Use semantic search tool
-
-Retrieved context → summarized → grounded response
-
-📂 Project Structure
-ingestion.py        → document loading & chunking
-embeddings.py       → embedding model + disk cache
-vector_store.py     → FAISS index & metadata
-tools.py            → semantic search & summarization tools
-agent.py            → LLM agent loop
-llm.py              → Ollama HTTP client
-streamlit_app.py    → UI logic
-app.py              → entry point
-requirements.txt    → dependencies
-data/               → vector store & cache
-⚙️ Setup Instructions
+⚙️ Installation
 1️⃣ Clone the repository
 git clone https://github.com/your-username/ai-personal-knowledge-assistant.git
 cd ai-personal-knowledge-assistant
 2️⃣ Create virtual environment
 python -m venv .venv
-.venv\Scripts\activate   # Windows
-# source .venv/bin/activate   # macOS / Linux
+.venv\Scripts\activate
 3️⃣ Install dependencies
 pip install -r requirements.txt
 4️⃣ Install & run Ollama
@@ -93,65 +57,43 @@ Start Ollama:
 ollama serve
 5️⃣ Run the app
 streamlit run app.py
-💡 Usage
-Upload Documents
+💡 How It Works
 
-Supported:
+Documents are uploaded and split into chunks
+Chunks are converted into embeddings
+Stored in FAISS vector database
 
-PDF
+User query →
 
-TXT
+Agent decides:
 
-Markdown
+Answer directly from conversation memory
+or
 
-Then click Ingest documents.
+Retrieve relevant context using semantic search
 
-Ask Questions
+Retrieved context → summarized → grounded answer
 
-The agent will:
+📂 Project Structure
+ingestion.py        → document ingestion & chunking
+embeddings.py       → embedding model with disk cache
+vector_store.py     → FAISS vector database
+tools.py            → semantic search & summarization tools
+agent.py            → LLM agent loop
+llm.py              → Ollama HTTP client
+streamlit_app.py    → Streamlit UI
+app.py              → entry point
+requirements.txt    → dependencies
+data/               → vector store & cache
+📌 Requirements
 
-use chat memory
+Python 3.10+
+Ollama running locally
 
-decide whether retrieval is needed
+🏷️ Project Type
 
-return a grounded answer
-
-Debug Mode
-
-Expand:
-
-🔎 Debug: Tools & Retrieved Chunks
-
-to see:
-
-tool calls
-
-retrieved context
-
-guardrail status
-
-🧩 Key Highlights
-
-✅ No LangChain — fully custom RAG pipeline
-✅ Tool-using LLM agent
-✅ Local-first & privacy-focused
-✅ On-disk FAISS persistence
-✅ Embedding cache for performance
-✅ Modular & extensible codebase
-
-🔮 Future Improvements
-
-Web search tool
-
-Document management UI
-
-Additional file formats (DOCX, HTML)
-
-Persistent chat history
-
-Multi-user support
+Local-First LLM Agent for Personal Knowledge Management (RAG + Tool Use)
 
 👨‍💻 Author
 
 Ranjith Kumar Mummadi
-AI / GenAI Engineer (Fresher – 2025)
