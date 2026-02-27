@@ -1,214 +1,157 @@
-## AI Personal Knowledge Assistant
+🧠 AI Personal Knowledge Assistant (Local LLM Agent with RAG)
 
-A production-ready, local-first AI personal knowledge assistant built with:
+A production-ready, local-first AI personal knowledge assistant that lets you upload documents and chat with them using a fully offline LLM.
 
-- **Ollama + `llama3:8b`** as the LLM (HTTP API, no LangChain)
-- **FAISS** as the vector database
-- **`sentence-transformers`** for text embeddings
-- **Streamlit** for the chat UI and document upload
+Built with a custom RAG pipeline, FAISS vector search, and an LLM-driven tool-using agent — without LangChain.
 
-The system implements a manual RAG pipeline and an LLM-based agent that decides when to retrieve from your knowledge base versus answering directly.
+🚀 Features
 
----
+📄 Upload and chat with your personal documents
+🔍 Semantic search over your knowledge base (FAISS)
+🧠 LLM agent that decides when to retrieve vs answer directly
+💬 Conversational memory (chat history aware)
+⚡ Embedding cache to avoid recomputation
+♻️ Document deduplication (no re-indexing same file)
+🛠 Debug panel showing:
 
-## Features
+tools used
 
-- **Document ingestion (RAG)**:
-  - PDF (`.pdf`) via `pypdf`
-  - Plain text (`.txt`)
-  - Markdown (`.md`, `.markdown`)
-- **Embeddings & vector store**:
-  - `sentence-transformers` (`all-MiniLM-L6-v2` by default)
-  - FAISS index with on-disk persistence
-  - On-disk **embedding cache** to avoid recomputation
-  - **Document-level deduplication** so the same file is not re-indexed
-- **Agent capabilities**:
-  - LLM-based router decides to:
-    - answer directly from chat history, or
-    - call tools for semantic search and summarization
-  - Tools:
-    - `semantic_search` (FAISS-backed semantic document search)
-    - `summarize_context` (LLM-powered summarization of retrieved chunks)
-  - **Max-iteration guardrail** on the agent loop
-  - Per-step trace of:
-    - which tool was used
-    - inputs
-    - retrieved chunks
-- **Conversation memory**:
-  - Chat history kept in Streamlit session state and fed into the agent.
-- **Frontend (Streamlit)**:
-  - Chat-style Q&A interface
-  - Document upload and ingestion panel
-  - Debug panel showing tools used, retrieved chunks, and guardrail info.
-- **Clean error handling**:
-  - Graceful handling when Ollama is not running
-  - Robustness against corrupted caches/indexes
+retrieved chunks
 
----
+agent reasoning steps
+💻 100% local execution (no paid APIs)
 
-## Project Structure
+🧠 Tech Stack
 
-- `ingestion.py` – Document ingestion and chunking
-- `embeddings.py` – SentenceTransformer wrapper with disk cache
-- `vector_store.py` – FAISS-based vector store and metadata
-- `tools.py` – Semantic search and context summarization tools
-- `agent.py` – LLM-based agent and agent loop
-- `llm.py` – Minimal Ollama HTTP client
-- `streamlit_app.py` – Streamlit UI and wiring
-- `app.py` – Streamlit entrypoint (`streamlit run app.py`)
-- `requirements.txt` – Python dependencies
+Python
 
----
+Streamlit – UI
 
-## Prerequisites
+Ollama (Llama 3 / Mistral) – Local LLM
 
-- **Python**: 3.10+ recommended
-- **Ollama** installed locally
-  - See the Ollama installation docs for your OS (`https://ollama.com/download`).
+FAISS – Vector database
 
----
+sentence-transformers – Embeddings
 
-## 1. Set up Ollama with `llama3:8b`
+PyPDF – PDF parsing
 
-1. Install Ollama (once), following the official instructions.
-2. Pull the `llama3:8b` model:
+NumPy
 
-```bash
-ollama pull llama3:8b
-```
+🏗 Architecture
 
-3. Ensure the Ollama server is running. On most systems, starting Ollama once will keep it running in the background. If needed, you can explicitly start it:
+This project implements a manual RAG + LLM agent loop:
 
-```bash
-ollama serve
-```
+Documents are ingested and chunked
 
-The app expects Ollama to be reachable at `http://localhost:11434` (default).
+Chunks → embeddings
 
----
+Stored in FAISS
 
-## 2. Install Python dependencies
+User query →
 
-From the project root (this folder):
+Agent decides:
 
-```bash
+🔹 Answer directly
+
+🔹 Use semantic search tool
+
+Retrieved context → summarized → grounded response
+
+📂 Project Structure
+ingestion.py        → document loading & chunking
+embeddings.py       → embedding model + disk cache
+vector_store.py     → FAISS index & metadata
+tools.py            → semantic search & summarization tools
+agent.py            → LLM agent loop
+llm.py              → Ollama HTTP client
+streamlit_app.py    → UI logic
+app.py              → entry point
+requirements.txt    → dependencies
+data/               → vector store & cache
+⚙️ Setup Instructions
+1️⃣ Clone the repository
+git clone https://github.com/your-username/ai-personal-knowledge-assistant.git
+cd ai-personal-knowledge-assistant
+2️⃣ Create virtual environment
 python -m venv .venv
-.venv\Scripts\activate  # Windows PowerShell
-# source .venv/bin/activate  # macOS / Linux
-
-pip install --upgrade pip
+.venv\Scripts\activate   # Windows
+# source .venv/bin/activate   # macOS / Linux
+3️⃣ Install dependencies
 pip install -r requirements.txt
-```
+4️⃣ Install & run Ollama
 
-This installs:
+Download:
 
-- `streamlit`
-- `faiss-cpu`
-- `pypdf`
-- `sentence-transformers`
-- `numpy`
-- `requests`
+https://ollama.com
 
-No LangChain is used in this project; the RAG pipeline and agent are implemented manually.
+Pull the model:
 
----
+ollama pull llama3:8b
 
-## 3. Run the app
+Start Ollama:
 
-From the project root, with your virtual environment activated and Ollama running:
-
-```bash
+ollama serve
+5️⃣ Run the app
 streamlit run app.py
-```
+💡 Usage
+Upload Documents
 
-This will open the Streamlit UI in your browser (typically at `http://localhost:8501`).
+Supported:
 
----
+PDF
 
-## 4. Using the Assistant
+TXT
 
-1. **Upload documents**:
-   - In the left **Knowledge Base** sidebar, upload any combination of:
-     - `.pdf`
-     - `.txt`
-     - `.md` / `.markdown`
-   - Click **Ingest documents**.
-   - The app:
-     - Stores files under `data/uploads/`
-     - Extracts text
-     - Splits into overlapping chunks
-     - Embeds with `sentence-transformers`
-     - Indexes vectors in FAISS
-     - Caches embeddings on disk
-     - Skips documents that were already indexed before
+Markdown
 
-2. **Ask questions**:
-   - Use the **Ask a question** section in the main panel.
-   - The agent:
-     - Maintains **chat history** as conversational memory.
-     - Calls an internal LLM-based router to decide whether to:
-       - Answer directly from history, or
-       - Call tools to search your knowledge base and summarize context.
+Then click Ingest documents.
 
-3. **Inspect tools and retrieved chunks**:
-   - Expand the **“Debug: Tools & Retrieved Chunks”** section under each answer.
-   - You will see:
-     - Which tool(s) were used (`semantic_search`, `summarize_context`, or `none`)
-     - Tool input parameters
-     - Retrieved chunks (source file and text content)
-     - Whether the max-iteration guardrail was reached.
+Ask Questions
 
----
+The agent will:
 
-## 5. Implementation Notes
+use chat memory
 
-- **Agent loop (`agent.py`)**:
-  - Uses an internal helper to ask the LLM whether to:
-    - `"retrieve"` – run semantic search over the vector store, optionally summarize, then answer using the retrieved context.
-    - `"answer_direct"` – answer immediately using the chat history (no retrieval).
-  - Imposes a configurable `max_iterations` guardrail to avoid unbounded loops.
-  - Returns an `AgentResponse` that includes:
-    - Final answer text
-    - A list of `AgentStepTrace` objects (tools used, tool inputs, retrieved chunks)
-    - Whether the max-iteration limit was reached.
+decide whether retrieval is needed
 
-- **LLM client (`llm.py`)**:
-  - Talks directly to the Ollama HTTP API (`/api/chat`).
-  - Provides:
-    - `chat(messages)` for multi-turn chat
-    - `complete(prompt, system_prompt)` convenience helper for instruction-style prompts.
+return a grounded answer
 
-- **Ingestion and caching**:
-  - `ingestion.py` computes a stable `doc_id` per uploaded file using a SHA-256 hash of the file contents + filename.
-  - The vector store tracks which `doc_id`s have already been indexed and skips them on re-ingestion.
-  - `embeddings.py` keeps an on-disk cache (`data/embeddings_cache.pkl`) keyed by SHA-256 of each text chunk.
+Debug Mode
 
----
+Expand:
 
-## 6. Troubleshooting
+🔎 Debug: Tools & Retrieved Chunks
 
-- **Ollama not running**:
-  - If you see an error like “Ensure Ollama is running (`ollama serve`) and the `llama3:8b` model is installed”, double-check:
-    - `ollama serve` is running
-    - `ollama pull llama3:8b` has completed successfully.
+to see:
 
-- **Corrupted index or cache**:
-  - If FAISS or cache files are corrupted, you can delete the `data/` directory and re-ingest documents:
-    - `data/vector_store.faiss`
-    - `data/vector_store_metadata.pkl`
-    - `data/embeddings_cache.pkl`
-    - `data/uploads/` (optional)
+tool calls
 
----
+retrieved context
 
-## 7. Extending the Assistant
+guardrail status
 
-Ideas:
+🧩 Key Highlights
 
-- Add more tools (e.g., web search, calendar, code search).
-- Add document management (list/delete indexed documents).
-- Support additional file types (Word, HTML, etc.).
-- Persist full chat histories to disk for later retrieval.
+✅ No LangChain — fully custom RAG pipeline
+✅ Tool-using LLM agent
+✅ Local-first & privacy-focused
+✅ On-disk FAISS persistence
+✅ Embedding cache for performance
+✅ Modular & extensible codebase
 
-The codebase is modular and type-hinted, so you can evolve the agent and tools without touching the core ingestion and vector store logic.
+🔮 Future Improvements
 
+Web search tool
+
+Document management UI
+
+Additional file formats (DOCX, HTML)
+
+Persistent chat history
+
+Multi-user support
+
+👨‍💻 Author
+
+Ranjith Kumar Mummadi
+AI / GenAI Engineer (Fresher – 2025)
